@@ -1,0 +1,18 @@
+# vscode files
+.vscode
+
+# dependencies directories
+node_modules/
+
+# logs
+yarn-debug.log*
+yarn-error.log*
+
+# test
+coverage
+
+# build files
+dist
+
+# os related
+.DS_Store
