@@ -72,8 +72,17 @@ export function text(
  * @param words list of words
  * @returns written list
  */
-export function writeList(words: (Writable | string)[]): string {
-	if (words.length === 0) return '';
+export function writeList(
+	words: (Writable | string)[],
+	emptyMessage?: Writable | string
+): string {
+	if (words.length === 0) {
+		if (emptyMessage) {
+			if (typeof emptyMessage === 'string') return emptyMessage;
+			return emptyMessage.write();
+		}
+		return '';
+	}
 	if (words.length === 1) {
 		if (typeof words[0] === 'string') return words[0];
 		return words[0].write();
