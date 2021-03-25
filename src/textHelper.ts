@@ -1,4 +1,3 @@
-import { Noun } from './noun';
 import { capitalize, trim } from './utils';
 
 export type Writable = {
@@ -51,12 +50,10 @@ export function text(
 				text += part;
 				if (words.length > i) {
 					if (!words[i]) return;
-					if (typeof words[i] === 'string') {
-						text += words[i];
-					} else if (Array.isArray(words[i])) {
+					if (Array.isArray(words[i])) {
 						text += writeList(words[i] as Writable[] | string[]);
 					} else {
-						text += (words[i] as Noun).write();
+						text += asString(words[i] as Writable | string);
 					}
 				}
 			});
@@ -76,30 +73,12 @@ export function writeList(
 	words: (Writable | string)[],
 	emptyMessage?: Writable | string
 ): string {
-	if (words.length === 0) {
-		if (emptyMessage) {
-			if (typeof emptyMessage === 'string') return emptyMessage;
-			return emptyMessage.write();
-		}
-		return '';
-	}
-	if (words.length === 1) {
-		if (typeof words[0] === 'string') return words[0];
-		return words[0].write();
-	}
-	let things: string[] = [];
-	let lastThing: string = '';
+	let lastThing: string = asString(words.pop());
+	let things: string[] = words.map(asString);
 
-	words.forEach((word, i) => {
-		const last = i === words.length - 1;
-		if (!last) {
-			if (typeof word === 'string') things.push(word);
-			else things.push(word.write());
-		} else {
-			if (typeof word === 'string') lastThing = word;
-			else lastThing = word.write();
-		}
-	});
+	if (!lastThing) return asString(emptyMessage);
+	if (things.length === 0) return lastThing;
+
 	return [things.join(', '), lastThing].join(' und ');
 }
 
@@ -124,4 +103,9 @@ export function template<Props = void>(
 		});
 		return text(templateStrings, ...nodes).write();
 	};
+}
+
+export function asString(word: Writable | string): string {
+	if (!word) return '';
+	return typeof word === 'string' ? word : word.write();
 }

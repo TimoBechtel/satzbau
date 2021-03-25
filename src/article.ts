@@ -1,6 +1,6 @@
 import { Gender, GrammaticalCase, GrammaticalNumber } from './declinable';
 
-export type Article = 'indefinite' | 'definite' | 'none';
+export type Article = 'indefinite' | 'definite' | 'none' | 'negation';
 
 export function parseGenderFromArticle(article: string): Gender {
 	switch (article) {
@@ -22,12 +22,18 @@ export function generateArticle(
 	grammaticalNumber: GrammaticalNumber
 ): string {
 	switch (type) {
-		case 'none':
-			return '';
 		case 'indefinite':
 			return indefiniteArticle(gender, grammaticalCase, grammaticalNumber);
 		case 'definite':
 			return definiteArticle(gender, grammaticalCase, grammaticalNumber);
+		case 'negation':
+			return negatedIndefiniteArticle(
+				gender,
+				grammaticalCase,
+				grammaticalNumber
+			);
+		default:
+			return '';
 	}
 }
 
@@ -56,6 +62,22 @@ function indefiniteArticle(
 		}
 	}
 	return '';
+}
+
+function negatedIndefiniteArticle(
+	gender: Gender,
+	grammaticalCase: GrammaticalCase,
+	grammaticalNumber: GrammaticalNumber
+): string {
+	if (grammaticalNumber === 's') {
+		return 'k' + indefiniteArticle(gender, grammaticalCase, grammaticalNumber);
+	}
+	if (grammaticalNumber === 'p') {
+		if (grammaticalCase === 'nominative' || grammaticalCase === 'accusative')
+			return 'keine';
+		if (grammaticalCase === 'genitive') return 'keiner';
+		return 'keinen'; // genitive
+	}
 }
 
 function definiteArticle(

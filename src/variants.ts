@@ -1,6 +1,6 @@
 import { Adjective, adjectiveSynonyms, isAdjective } from './adjective';
 import { isNoun, Noun, nounSynonyms } from './noun';
-import { Writable } from './textHelper';
+import { asString, Writable } from './textHelper';
 import { pick } from './utils';
 
 /**
@@ -34,11 +34,7 @@ export function synonyms(...words: (Noun | Adjective)[]): Noun | Adjective {
 export function variants(...words: (Writable | string)[]): Writable {
 	const next = variantPicker(words);
 	return {
-		write() {
-			let word = next();
-			if (typeof word === 'string') return word;
-			return word.write();
-		},
+		write: () => asString(next()),
 	};
 }
 

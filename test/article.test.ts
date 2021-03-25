@@ -104,6 +104,30 @@ test('generates article', () => {
 				},
 			},
 		},
+		negation: {
+			s: {
+				nominative: {
+					f: 'keine',
+					m: 'kein',
+					n: 'kein',
+				},
+				accusative: {
+					f: 'keine',
+					m: 'keinen',
+					n: 'kein',
+				},
+				dative: {
+					f: 'keiner',
+					m: 'keinem',
+					n: 'keinem',
+				},
+				genitive: {
+					f: 'keiner',
+					m: 'keines',
+					n: 'keines',
+				},
+			},
+		},
 	};
 	Object.entries(articles).forEach(([specificity, value]) => {
 		Object.entries(value).forEach(([number, value]) => {

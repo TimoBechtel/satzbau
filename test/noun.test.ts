@@ -206,3 +206,54 @@ test('allows adding adjectives to nouns', () => {
 		`.write()
 	).toBe('Eine kurze Geschichte der Menschheit.');
 });
+test('creates negated nouns', () => {
+	const apple = noun('der apfel, die äpfel, des apfels');
+	expect(apple.negated().write()).toBe('kein Apfel');
+	expect(apple.negated().plural().write()).toBe('keine Äpfel');
+	expect(apple.negated().plural().genitive().write()).toBe('keiner Äpfel');
+});
+
+test('allows counting nouns', () => {
+	const apple = noun('der apfel, die äpfel, des apfels');
+
+	// positive numbers
+	expect(apple.count(3).write()).toBe('drei Äpfel');
+	expect(apple.dative().count(5).write()).toBe('fünf Äpfeln');
+	expect(apple.specific().dative().count(5).write()).toBe('den fünf Äpfeln');
+	expect(apple.unspecific().count(9).write()).toBe('neun Äpfel');
+	expect(apple.count(9).singular().write()).toBe('ein Apfel');
+	expect(apple.count(9).specific().write()).toBe('die neun Äpfel');
+
+	// count cant be negative, returns negated
+	expect(apple.count(-2).write()).toBe('kein Apfel');
+	expect(apple.plural().count(-2).write()).toBe('keine Äpfel');
+	expect(apple.specific().count(-2).write()).toBe('kein Apfel');
+	expect(apple.specific().count(-2).singular().write()).toBe('kein Apfel');
+	expect(apple.plural().count(-1).write()).toBe('keine Äpfel');
+
+	// creates a negated noun when count === 0
+	expect(apple.count(0).write()).toBe('kein Apfel');
+	expect(apple.count(0).plural().write()).toBe('keine Äpfel');
+	expect(apple.count(0).specific().write()).toBe('der Apfel');
+	expect(apple.specific().count(0).write()).toBe('kein Apfel');
+	expect(apple.count(0).plural().count(1).write()).toBe('ein Apfel');
+	expect(apple.count(0).plural().genitive().write()).toBe('keiner Äpfel');
+	expect(apple.plural().count(0).genitive().write()).toBe('keiner Äpfel');
+	expect(apple.count(0).genitive().write()).toBe('keines Apfels');
+
+	// numbers without a string representation
+	expect(apple.count(11).write()).toBe('11 Äpfel');
+	expect(apple.count(0.5).write()).toBe('0,5 Äpfel');
+	expect(apple.count(1.2).write()).toBe('1,2 Äpfel');
+	expect(apple.count(1.2).singular().write()).toBe('ein Apfel');
+
+	// count === 1
+	expect(apple.count(1).write()).toBe('ein Apfel');
+	expect(apple.count(1).plural().write()).toBe('die Äpfel');
+	expect(apple.plural().count(1).write()).toBe('ein Apfel');
+	expect(apple.specific().write()).toBe('der Apfel');
+	expect(apple.specific().count(1).write()).toBe('der Apfel');
+
+	expect(apple.count(0).attributes('klein').write()).toBe('kein kleiner Apfel');
+	expect(apple.count(2).attributes('rot').write()).toBe('zwei rote Äpfel');
+});

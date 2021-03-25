@@ -14,6 +14,7 @@ import {
 	GrammaticalCase,
 	GrammaticalNumber,
 } from './declinable';
+import { number } from './number';
 import { Writable } from './textHelper';
 import { capitalize } from './utils';
 import { variantPicker } from './variants';
@@ -24,6 +25,8 @@ export interface Noun
 		Writable {
 	specific: () => this;
 	unspecific: () => this;
+	negated: () => Noun;
+	count: (n: number) => Noun;
 	attributes: (...adjectives: (Adjective | string)[]) => this;
 }
 
@@ -86,14 +89,32 @@ export function noun(template: string): Noun {
 	}
 
 	const create = nounFactory(
-		({ articleType, attributes, grammaticalCase, grammaticalNumber }) => ({
+		({
+			articleType,
+			attributes,
+			grammaticalCase,
+			grammaticalNumber,
+			count,
+		}) => ({
 			write() {
 				let words: string[] = [];
+				let c = grammaticalNumber === 's' ? undefined : count;
 				let k = grammaticalCase || 'nominative';
 				let n = grammaticalNumber || 's';
-				let t = articleType || (n === 's' ? 'indefinite' : 'definite');
+				let t = articleType;
+				// generate defaults, if articleType is not explicitly set
+				if (!t) {
+					if (c) {
+						t = 'none';
+					} else {
+						t = n === 's' ? 'indefinite' : 'definite';
+					}
+				}
 				const article = generateArticle(t, gender, k, n);
 				if (article) words.push(article);
+				if (c && c !== 1) {
+					words.push(number(c));
+				}
 				const attributesString = attributes
 					.map((a) => {
 						let attribute: Adjective = a[k]().article(t).gender(gender);
@@ -114,7 +135,13 @@ export function noun(template: string): Noun {
 export function nounSynonyms(...words: Noun[]): Noun {
 	const next = variantPicker(words);
 	const create = nounFactory(
-		({ attributes, articleType, grammaticalCase, grammaticalNumber }) => ({
+		({
+			attributes,
+			articleType,
+			grammaticalCase,
+			grammaticalNumber,
+			count,
+		}) => ({
 			write() {
 				let word = next();
 				if (grammaticalCase) word = word[grammaticalCase]();
@@ -122,6 +149,7 @@ export function nounSynonyms(...words: Noun[]): Noun {
 					word = grammaticalNumber === 's' ? word.singular() : word.plural();
 				if (articleType) word = word.article(articleType);
 				if (attributes.length > 0) word = word.attributes(...attributes);
+				if (count) word = word.count(count);
 				return word.write();
 			},
 		})
@@ -131,6 +159,7 @@ export function nounSynonyms(...words: Noun[]): Noun {
 
 type NounArgs = {
 	attributes: Adjective[];
+	count?: number;
 } & DeclinableArgs &
 	WithArticleArgs;
 
@@ -144,6 +173,17 @@ export function nounFactory(
 			},
 			unspecific() {
 				return this.article('indefinite');
+			},
+			negated() {
+				return this.article('negation');
+			},
+			count(c) {
+				if (c === 1)
+					return args.articleType === 'negation'
+						? this.unspecific().singular()
+						: this.singular();
+				if (c <= 0) return this.negated();
+				return create({ ...args, grammaticalNumber: 'p', count: c });
 			},
 			attributes(...adjectivesOrStrings) {
 				const adjectives = adjectivesOrStrings.map((a) =>
