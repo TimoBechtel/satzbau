@@ -1,4 +1,6 @@
+import { adjective } from '../src/adjective';
 import { noun } from '../src/noun';
+import { sentence } from '../src/textHelper';
 
 test('generates declinable word by providing it with a template string', () => {
 	const a = noun('der see, die seen, des sees');
@@ -178,4 +180,29 @@ test('throws error on wrong template syntax', () => {
 	expect(() => noun('das auto')).toThrow();
 	expect(() => noun('das auto, die autos')).toThrow();
 	expect(() => noun('auto,autos,autos')).toThrow();
+});
+
+test('allows adding adjectives to nouns', () => {
+	const ocean = noun('das Meer,-e,-s').attributes('rot', 'weit');
+	expect(ocean.write()).toBe('ein rotes, weites Meer');
+	expect(ocean.specific().write()).toBe('das rote, weite Meer');
+
+	const stone = noun('der stein,-e,-s')
+		.attributes(adjective('klein'))
+		.specific();
+	expect(stone.write()).toBe('der kleine Stein');
+
+	const door = noun('die tür,-en,-').attributes('viel zu klein');
+
+	expect(door.genitive().specific().write()).toBe('der viel zu kleinen Tür');
+
+	const story = noun('die geschichte,-n,-');
+	const humanity = noun('die menschheit,-en,-');
+
+	expect(
+		sentence`
+			${story.unspecific().accusative().attributes('kurz')} 
+			${humanity.genitive().specific()}
+		`.write()
+	).toBe('Eine kurze Geschichte der Menschheit.');
 });

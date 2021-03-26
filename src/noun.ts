@@ -1,6 +1,7 @@
+import { adjective, Adjective } from './adjective';
 import { generateArticle, parseGenderFromArticle } from './article';
-import { Writable } from './textHelper';
 import { capitalize } from './utils';
+import { Declinable, WithArticleType } from './word';
 
 export type Gender = 'f' | 'n' | 'm';
 export type GrammaticalCase =
@@ -11,17 +12,11 @@ export type GrammaticalCase =
 export type GrammaticalNumber = 'p' | 's';
 export type Article = 'indefinite' | 'definite' | 'none';
 
-export type Noun = {
-	article: (type: Article) => Noun;
-	specific: () => Noun;
-	unspecific: () => Noun;
-	plural: () => Noun;
-	singular: () => Noun;
-	accusative: () => Noun;
-	genitive: () => Noun;
-	dative: () => Noun;
-	nominative: () => Noun;
-} & Writable;
+export interface Noun extends Declinable, WithArticleType {
+	specific: () => this;
+	unspecific: () => this;
+	attributes: (...adjectives: (Adjective | string)[]) => this;
+}
 
 /**
  * Creates a declinable noun.
@@ -49,142 +44,140 @@ export function noun(template: string): Noun {
 		nominativePl = nominativeSg + nominativePl.slice(1);
 	if (genitiveSg[0] === '-') genitiveSg = nominativeSg + genitiveSg.slice(1);
 
-	let articleType: Article;
-	let grammaticalCase: GrammaticalCase;
-	let grammaticalNumber: GrammaticalNumber;
-
-	return createNode(
-		{ nominativeSg, nominativePl, genitiveSg },
+	function create({
+		articleType,
+		attributes = [],
 		grammaticalCase,
 		grammaticalNumber,
-		gender,
-		articleType
-	);
-}
-
-function createNode(
-	template: { nominativeSg: string; nominativePl: string; genitiveSg: string },
-	grammaticalCase: GrammaticalCase,
-	grammaticalNumber: GrammaticalNumber,
-	gender: Gender,
-	articleType: Article
-): Noun {
-	function decline(
-		grammaticalCase: GrammaticalCase,
-		grammaticalNumber: GrammaticalNumber
-	): string {
-		if (grammaticalNumber === 's') {
-			if (grammaticalCase === 'nominative') return template.nominativeSg;
-			if (grammaticalCase === 'genitive') return template.genitiveSg;
-			if (gender === 'f') return template.nominativeSg;
-			if (gender === 'n') {
-				if (grammaticalCase === 'accusative') return template.nominativeSg;
-				// needs extra care ❤️
-				if (template.nominativeSg.toLowerCase() === 'herz')
-					return template.nominativePl;
-				return template.nominativeSg;
+	}: {
+		grammaticalCase?: GrammaticalCase;
+		grammaticalNumber?: GrammaticalNumber;
+		articleType?: Article;
+		attributes?: Adjective[];
+	} = {}): Noun {
+		function decline(
+			grammaticalCase: GrammaticalCase,
+			grammaticalNumber: GrammaticalNumber
+		): string {
+			if (grammaticalNumber === 's') {
+				if (grammaticalCase === 'nominative') return nominativeSg;
+				if (grammaticalCase === 'genitive') return genitiveSg;
+				if (gender === 'f') return nominativeSg;
+				if (gender === 'n') {
+					if (grammaticalCase === 'accusative') return nominativeSg;
+					// needs extra care ❤️
+					if (nominativeSg.toLowerCase() === 'herz') return nominativePl;
+					return nominativeSg;
+				}
+				// maskuline: accusative + dative
+				if (isNDeclension(nominativeSg)) return nominativePl;
+				return nominativeSg;
 			}
-			// maskuline: accusative + dative
-			if (isNDeclension(template.nominativeSg)) return template.nominativePl;
-			return template.nominativeSg;
-		}
-		if (grammaticalNumber === 'p') {
-			if (
-				grammaticalCase === 'dative' &&
-				!['s', 'n'].includes(
-					template.nominativePl[template.nominativePl.length - 1]
+			if (grammaticalNumber === 'p') {
+				if (
+					grammaticalCase === 'dative' &&
+					!['s', 'n'].includes(nominativePl[nominativePl.length - 1])
 				)
-			)
-				return template.nominativePl + 'n';
-			return template.nominativePl;
+					return nominativePl + 'n';
+				return nominativePl;
+			}
 		}
-	}
 
-	return {
-		accusative() {
-			return createNode(
-				template,
-				'accusative',
-				grammaticalNumber,
-				gender,
-				articleType
-			);
-		},
-		dative() {
-			return createNode(
-				template,
-				'dative',
-				grammaticalNumber,
-				gender,
-				articleType
-			);
-		},
-		genitive() {
-			return createNode(
-				template,
-				'genitive',
-				grammaticalNumber,
-				gender,
-				articleType
-			);
-		},
-		nominative() {
-			return createNode(
-				template,
-				'nominative',
-				grammaticalNumber,
-				gender,
-				articleType
-			);
-		},
-		specific() {
-			return createNode(
-				template,
-				grammaticalCase,
-				grammaticalNumber,
-				gender,
-				'definite'
-			);
-		},
-		unspecific() {
-			return createNode(
-				template,
-				grammaticalCase,
-				grammaticalNumber,
-				gender,
-				'indefinite'
-			);
-		},
-		article(type) {
-			return createNode(
-				template,
-				grammaticalCase,
-				grammaticalNumber,
-				gender,
-				type
-			);
-		},
-		plural() {
-			return createNode(template, grammaticalCase, 'p', gender, articleType);
-		},
-		singular() {
-			return createNode(template, grammaticalCase, 's', gender, articleType);
-		},
-		write() {
-			let words: string[] = [];
-			let k = grammaticalCase || 'nominative';
-			let n = grammaticalNumber || 's';
-			const article = generateArticle(
-				articleType || (n === 's' ? 'indefinite' : 'definite'),
-				gender,
-				k,
-				n
-			);
-			if (article) words.push(article);
-			words.push(capitalize(decline(k, n)));
-			return words.join(' ');
-		},
-	};
+		return {
+			accusative() {
+				return create({
+					grammaticalCase: 'accusative',
+					grammaticalNumber,
+					articleType,
+					attributes,
+				});
+			},
+			dative() {
+				return create({
+					grammaticalCase: 'dative',
+					grammaticalNumber,
+					articleType,
+					attributes,
+				});
+			},
+			genitive() {
+				return create({
+					grammaticalCase: 'genitive',
+					grammaticalNumber,
+					articleType,
+					attributes,
+				});
+			},
+			nominative() {
+				return create({
+					grammaticalCase: 'nominative',
+					grammaticalNumber,
+					articleType,
+					attributes,
+				});
+			},
+			specific() {
+				return this.article('definite');
+			},
+			unspecific() {
+				return this.article('indefinite');
+			},
+			article(type) {
+				return create({
+					grammaticalCase,
+					grammaticalNumber,
+					articleType: type,
+					attributes,
+				});
+			},
+			attributes(...adjectivesOrStrings) {
+				const adjectives = adjectivesOrStrings.map((a) =>
+					typeof a === 'string' ? adjective(a) : a
+				);
+				return create({
+					grammaticalCase,
+					grammaticalNumber,
+					articleType,
+					attributes: adjectives,
+				});
+			},
+			plural() {
+				return create({
+					grammaticalCase,
+					grammaticalNumber: 'p',
+					articleType,
+					attributes,
+				});
+			},
+			singular() {
+				return create({
+					grammaticalCase,
+					grammaticalNumber: 's',
+					articleType,
+					attributes,
+				});
+			},
+			write() {
+				let words: string[] = [];
+				let k = grammaticalCase || 'nominative';
+				let n = grammaticalNumber || 's';
+				let t = articleType || (n === 's' ? 'indefinite' : 'definite');
+				const article = generateArticle(t, gender, k, n);
+				if (article) words.push(article);
+				const attributesString = attributes
+					.map((a) => {
+						let attribute: Adjective = a[k]().article(t).gender(gender);
+						attribute = n === 'p' ? attribute.plural() : attribute.singular();
+						return attribute.write();
+					})
+					.join(', ');
+				if (attributesString.length > 0) words.push(attributesString);
+				words.push(capitalize(decline(k, n)));
+				return words.join(' ');
+			},
+		};
+	}
+	return create();
 }
 
 /**

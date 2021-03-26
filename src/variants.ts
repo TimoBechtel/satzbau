@@ -1,3 +1,4 @@
+import { adjective, Adjective } from './adjective';
 import { Article, GrammaticalCase, GrammaticalNumber, Noun } from './noun';
 import { Writable } from './textHelper';
 import { pick } from './utils';
@@ -17,64 +18,90 @@ import { pick } from './utils';
  */
 export function synonyms(...words: Noun[]): Noun {
 	const next = createVariantPicker(words);
-	function createSynonyms(
-		words: Noun[],
-		grammaticalCase?: GrammaticalCase,
-		grammaticalNumber?: GrammaticalNumber,
-		articleType?: Article
-	): Noun {
+	function createSynonyms({
+		attributes = [],
+		articleType,
+		grammaticalCase,
+		grammaticalNumber,
+	}: {
+		grammaticalCase?: GrammaticalCase;
+		grammaticalNumber?: GrammaticalNumber;
+		articleType?: Article;
+		attributes: Adjective[];
+	}): Noun {
 		return {
 			article(a) {
-				return createSynonyms(words, grammaticalCase, grammaticalNumber, a);
+				return createSynonyms({
+					grammaticalCase,
+					grammaticalNumber,
+					articleType: a,
+					attributes,
+				});
 			},
 			specific() {
-				return createSynonyms(
-					words,
-					grammaticalCase,
-					grammaticalNumber,
-					'definite'
-				);
+				return this.article('definite');
 			},
 			unspecific() {
-				return createSynonyms(
-					words,
-					grammaticalCase,
-					grammaticalNumber,
-					'indefinite'
-				);
+				return this.article('indefinite');
 			},
 			accusative() {
-				return createSynonyms(
-					words,
-					'accusative',
+				return createSynonyms({
+					grammaticalCase: 'accusative',
 					grammaticalNumber,
-					articleType
-				);
+					articleType,
+					attributes,
+				});
 			},
 			dative() {
-				return createSynonyms(words, 'dative', grammaticalNumber, articleType);
+				return createSynonyms({
+					grammaticalCase: 'dative',
+					grammaticalNumber,
+					articleType,
+					attributes,
+				});
 			},
 			genitive() {
-				return createSynonyms(
-					words,
-					'genitive',
+				return createSynonyms({
+					grammaticalCase: 'genitive',
 					grammaticalNumber,
-					articleType
-				);
+					articleType,
+					attributes,
+				});
 			},
 			nominative() {
-				return createSynonyms(
-					words,
-					'nominative',
+				return createSynonyms({
+					grammaticalCase: 'nominative',
 					grammaticalNumber,
-					articleType
+					articleType,
+					attributes,
+				});
+			},
+			attributes(...adjectivesOrStrings) {
+				const adjectives = adjectivesOrStrings.map((a) =>
+					typeof a === 'string' ? adjective(a) : a
 				);
+				return createSynonyms({
+					grammaticalCase,
+					grammaticalNumber,
+					articleType,
+					attributes: adjectives,
+				});
 			},
 			plural() {
-				return createSynonyms(words, grammaticalCase, 'p', articleType);
+				return createSynonyms({
+					grammaticalCase,
+					grammaticalNumber: 'p',
+					articleType,
+					attributes,
+				});
 			},
 			singular() {
-				return createSynonyms(words, grammaticalCase, 's', articleType);
+				return createSynonyms({
+					grammaticalCase,
+					grammaticalNumber: 's',
+					articleType,
+					attributes,
+				});
 			},
 			write() {
 				let word = next();
@@ -82,11 +109,12 @@ export function synonyms(...words: Noun[]): Noun {
 				if (grammaticalNumber)
 					word = grammaticalNumber === 's' ? word.singular() : word.plural();
 				if (articleType) word = word.article(articleType);
+				if (attributes.length > 0) word = word.attributes(...attributes);
 				return word.write();
 			},
 		};
 	}
-	return createSynonyms(words);
+	return createSynonyms({ attributes: [] });
 }
 
 /**
