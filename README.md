@@ -1,5 +1,6 @@
-<h1 align="center">nlg-german</h1>
-<h3 align="center">simple natural language generator (german)</h3>
+<h1 align="center">🏗 <br/> Satzbau</h1>
+<h3 align="center">natural language generator for german</h3>
+<p align="center"><i><code>/ˈzatsˌbaʊ/</code>, german: "sentence construction"</i></p>
 <p align="center">
   <a href="#" target="_blank">
     <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg" />
@@ -7,7 +8,7 @@
 </p>
 <p align="center">
   ·
-  <a href="https://github.com/TimoBechtel/nlg-german/issues">Report Bug / Request Feature</a>
+  <a href="https://github.com/TimoBechtel/satzbau/issues">Report Bug / Request Feature</a>
   ·
 </p>
 
@@ -22,12 +23,12 @@
 
 ## About
 
-A simple tool to generate german texts.
+A tool to generate natural german texts.
 
 It allows you to:
 
-- decline words (including articles)
-- automatically pick synonyms for words
+- decline words (including articles and adjectives)
+- define evenly distributed synonyms for words
 - automatically render lists as text
 - a handy template string syntax to format sentences
 - create template functions to render advances sentences
@@ -37,7 +38,6 @@ It allows you to:
 However, it can't (yet):
 
 - automatically detect cases
-- decline anything other than articles and nouns (e.g. adjectives)
 - conjugate verbs
 
 ## Install
@@ -45,7 +45,7 @@ However, it can't (yet):
 ### NPM:
 
 ```sh
-yarn install nlg-german
+yarn install satzbau
 ```
 
 ## Usage
@@ -53,9 +53,9 @@ yarn install nlg-german
 ### Define words
 
 ```ts
-import { noun } from 'nlg-german';
+import { noun } from 'satzbau';
 
-// provide the noun function with a string, containing:
+// provide it with a string, containing:
 // 1. an article
 // 2. the word in nominative singular, plural and genitive singular
 const phone = noun('das telefon, die telefone, des telefons');
@@ -67,7 +67,7 @@ const phone = noun('das telefon,-e,-s');
 ### Example
 
 ```ts
-import { noun, sentence, synonyms } from 'nlg-german';
+import { noun, sentence, synonyms } from 'satzbau';
 
 cconst car = synonyms(
 	noun('das auto, die autos, des autos'),
@@ -130,7 +130,7 @@ yarn run test
 
 Contributions, issues and feature requests are welcome!<br />
 
-1. Check [issues](https://github.com/TimoBechtel/nlg-german/issues)
+1. Check [issues](https://github.com/TimoBechtel/satzbau/issues)
 1. Fork the Project
 1. Create your Feature Branch (`git checkout -b feat/AmazingFeature`)
 1. Test your changes `yarn run test`

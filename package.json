@@ -1,12 +1,12 @@
 {
-	"name": "nlg-german",
+	"name": "satzbau",
 	"version": "1.0.0",
-	"description": "simple natural language generator for german",
+	"description": "natural language generator for german",
 	"source": "src/index.ts",
 	"main": "dist/index.js",
 	"module": "dist/index.module.js",
 	"umd:main": "dist/index.umd.js",
-	"repository": "git@github.com:TimoBechtel/nlg-german.git",
+	"repository": "git@github.com:TimoBechtel/satzbau.git",
 	"author": "Timo Bechtel",
 	"license": "MIT",
 	"keywords": [
