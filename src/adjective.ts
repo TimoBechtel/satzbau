@@ -35,8 +35,9 @@ export function adjective(template: string): Adjective {
 
 	/**
 	 * hoch => hoh
+	 * (any word that ends with 'hoch', so you do something like 'sehr hoch')
 	 */
-	stem = stem.replace(/ch$/, 'h');
+	stem = stem.replace(/hoch$/, 'hoh');
 
 	function decline({
 		articleType = 'definite',
@@ -54,7 +55,7 @@ export function adjective(template: string): Adjective {
 				return stem + 'en';
 			if (grammaticalCase === 'nominative' || grammaticalCase === 'accusative')
 				return stem + 'e';
-			return stem + 'r';
+			return stem + 'er';
 		}
 		if (gender === 'f') {
 			if (grammaticalCase === 'nominative' || grammaticalCase === 'accusative')
