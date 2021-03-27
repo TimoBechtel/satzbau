@@ -17,7 +17,6 @@ import {
 import { number } from './number';
 import { Writable } from './textHelper';
 import { capitalize } from './utils';
-import { variantPicker } from './variants';
 
 export interface Noun
 	extends Declinable<Noun>,
@@ -164,31 +163,6 @@ export function noun(template: string): Noun {
 	);
 
 	return create({ definingAdjective });
-}
-
-export function nounSynonyms(...words: Noun[]): Noun {
-	const next = variantPicker(words);
-	const create = nounFactory(
-		({
-			attributes,
-			articleType,
-			grammaticalCase,
-			grammaticalNumber,
-			count,
-		}) => ({
-			write() {
-				let word = next();
-				if (grammaticalCase) word = word[grammaticalCase]();
-				if (grammaticalNumber)
-					word = grammaticalNumber === 's' ? word.singular() : word.plural();
-				if (articleType) word = word.article(articleType);
-				if (attributes.length > 0) word = word.attributes(...attributes);
-				if (count) word = word.count(count);
-				return word.write();
-			},
-		})
-	);
-	return create();
 }
 
 type NounArgs = {
