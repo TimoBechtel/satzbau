@@ -206,6 +206,14 @@ test('allows adding adjectives to nouns', () => {
 		`.write()
 	).toBe('Eine kurze Geschichte der Menschheit.');
 });
+
+test('allow adding defining articles', () => {
+	const beer = noun('das bayerische Bier,-e,-es').attributes('groß');
+	expect(beer.genitive().write()).toBe('eines großen bayerischen Bieres');
+	expect(beer.attributes('groß', 'lecker').genitive().write()).toBe(
+		'eines großen, leckeren bayerischen Bieres'
+	);
+});
 test('creates negated nouns', () => {
 	const apple = noun('der apfel, die äpfel, des apfels');
 	expect(apple.negated().write()).toBe('kein Apfel');

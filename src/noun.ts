@@ -37,8 +37,9 @@ export function isNoun(obj: any): obj is Noun {
 /**
  * Creates a declinable noun.
  * For this to work, you need to provide this function with
- * the word with an article (der/die/das) and
- * in the form nominative singular, nominative plural and genitive singular.
+ * the word + an article (der/die/das)
+ * in the forms nominative singular, nominative plural and genitive singular.
+ * You can also create an adjective-noun combination, e.g. "der blaue Himmel".
  * @param template template; syntax: 'ARTICLE WORD_SINGULAR, [ART.] W.PLURAL, [ART.] W.GENITIVE_PLURAL'
  * @example noun('das auto, die autos, des autos');
  */
@@ -46,12 +47,21 @@ export function noun(template: string): Noun {
 	const declensions = template.split(',');
 	if (declensions.length < 3) throw 'Wrong template syntax';
 
-	const templateArticle = declensions[0].trim().split(' ')[0].trim();
+	const nominativeWords = declensions[0].trim().split(' ');
+	const templateArticle = nominativeWords[0].trim();
 
 	let gender: Gender = parseGenderFromArticle(templateArticle);
 	if (!gender) throw 'Could not detect gender.';
 
-	let nominativeSg = declensions[0].trim().split(' ')[1].trim();
+	let nominativeSg: string;
+	let definingAdjective: Adjective;
+	if (nominativeWords.length > 2) {
+		definingAdjective = adjective(nominativeWords[1]);
+		nominativeSg = nominativeWords[2];
+	} else {
+		nominativeSg = nominativeWords[1];
+	}
+
 	let nominativePl = declensions[1].trim().split(' ').pop().trim();
 	let genitiveSg = declensions[2].trim().split(' ').pop().trim();
 
@@ -91,10 +101,11 @@ export function noun(template: string): Noun {
 	const create = nounFactory(
 		({
 			articleType,
-			attributes,
+			attributes = [],
 			grammaticalCase,
 			grammaticalNumber,
 			count,
+			definingAdjective,
 		}) => ({
 			write() {
 				let words: string[] = [];
@@ -123,13 +134,20 @@ export function noun(template: string): Noun {
 					})
 					.join(', ');
 				if (attributesString.length > 0) words.push(attributesString);
+				if (definingAdjective) {
+					let adjective: Adjective = definingAdjective[k]()
+						.article(t)
+						.gender(gender);
+					adjective = n === 'p' ? adjective.plural() : adjective.singular();
+					words.push(adjective.write());
+				}
 				words.push(capitalize(decline(k, n)));
 				return words.join(' ');
 			},
 		})
 	);
 
-	return create();
+	return create({ definingAdjective });
 }
 
 export function nounSynonyms(...words: Noun[]): Noun {
@@ -158,7 +176,8 @@ export function nounSynonyms(...words: Noun[]): Noun {
 }
 
 type NounArgs = {
-	attributes: Adjective[];
+	definingAdjective?: Adjective;
+	attributes?: Adjective[];
 	count?: number;
 } & DeclinableArgs &
 	WithArticleArgs;
