@@ -1,4 +1,6 @@
-import { Article, Gender, GrammaticalCase, GrammaticalNumber } from './noun';
+import { Gender, GrammaticalCase, GrammaticalNumber } from './declinable';
+
+export type Article = 'indefinite' | 'definite' | 'none';
 
 export function parseGenderFromArticle(article: string): Gender {
 	switch (article) {
@@ -84,4 +86,25 @@ function definiteArticle(
 		if (grammaticalCase === 'dative') return 'dem';
 		return 'des'; // genitive
 	}
+}
+
+export interface WithArticleType<T> {
+	article: (type: Article) => T;
+}
+
+export type WithArticleArgs = {
+	articleType?: Article;
+};
+
+export function withArticleMixin<
+	T extends WithArticleType<T>,
+	Args extends WithArticleArgs
+>(constructor: (args: Args) => T): (args: Args) => WithArticleType<T> {
+	return function create(args: Args): WithArticleType<T> {
+		return {
+			article(type) {
+				return constructor({ ...args, articleType: type });
+			},
+		};
+	};
 }

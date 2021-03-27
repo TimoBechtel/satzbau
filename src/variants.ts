@@ -1,5 +1,5 @@
-import { adjective, Adjective } from './adjective';
-import { Article, GrammaticalCase, GrammaticalNumber, Noun } from './noun';
+import { Adjective, adjectiveSynonyms, isAdjective } from './adjective';
+import { isNoun, Noun, nounSynonyms } from './noun';
 import { Writable } from './textHelper';
 import { pick } from './utils';
 
@@ -16,105 +16,13 @@ import { pick } from './utils';
  * @param words
  * @returns declinable word
  */
-export function synonyms(...words: Noun[]): Noun {
-	const next = createVariantPicker(words);
-	function createSynonyms({
-		attributes = [],
-		articleType,
-		grammaticalCase,
-		grammaticalNumber,
-	}: {
-		grammaticalCase?: GrammaticalCase;
-		grammaticalNumber?: GrammaticalNumber;
-		articleType?: Article;
-		attributes: Adjective[];
-	}): Noun {
-		return {
-			article(a) {
-				return createSynonyms({
-					grammaticalCase,
-					grammaticalNumber,
-					articleType: a,
-					attributes,
-				});
-			},
-			specific() {
-				return this.article('definite');
-			},
-			unspecific() {
-				return this.article('indefinite');
-			},
-			accusative() {
-				return createSynonyms({
-					grammaticalCase: 'accusative',
-					grammaticalNumber,
-					articleType,
-					attributes,
-				});
-			},
-			dative() {
-				return createSynonyms({
-					grammaticalCase: 'dative',
-					grammaticalNumber,
-					articleType,
-					attributes,
-				});
-			},
-			genitive() {
-				return createSynonyms({
-					grammaticalCase: 'genitive',
-					grammaticalNumber,
-					articleType,
-					attributes,
-				});
-			},
-			nominative() {
-				return createSynonyms({
-					grammaticalCase: 'nominative',
-					grammaticalNumber,
-					articleType,
-					attributes,
-				});
-			},
-			attributes(...adjectivesOrStrings) {
-				const adjectives = adjectivesOrStrings.map((a) =>
-					typeof a === 'string' ? adjective(a) : a
-				);
-				return createSynonyms({
-					grammaticalCase,
-					grammaticalNumber,
-					articleType,
-					attributes: adjectives,
-				});
-			},
-			plural() {
-				return createSynonyms({
-					grammaticalCase,
-					grammaticalNumber: 'p',
-					articleType,
-					attributes,
-				});
-			},
-			singular() {
-				return createSynonyms({
-					grammaticalCase,
-					grammaticalNumber: 's',
-					articleType,
-					attributes,
-				});
-			},
-			write() {
-				let word = next();
-				if (grammaticalCase) word = word[grammaticalCase]();
-				if (grammaticalNumber)
-					word = grammaticalNumber === 's' ? word.singular() : word.plural();
-				if (articleType) word = word.article(articleType);
-				if (attributes.length > 0) word = word.attributes(...attributes);
-				return word.write();
-			},
-		};
-	}
-	return createSynonyms({ attributes: [] });
+export function synonyms(...words: Noun[]): Noun;
+export function synonyms(...words: Adjective[]): Adjective;
+export function synonyms(...words: (Noun | Adjective)[]): Noun | Adjective {
+	if (isAdjective(words[0]))
+		return adjectiveSynonyms(...(words as Adjective[]));
+	if (isNoun(words[0])) return nounSynonyms(...(words as Noun[]));
+	return;
 }
 
 /**
@@ -124,7 +32,7 @@ export function synonyms(...words: Noun[]): Noun {
  * @returns writable text node
  */
 export function variants(...words: (Writable | string)[]): Writable {
-	const next = createVariantPicker(words);
+	const next = variantPicker(words);
 	return {
 		write() {
 			let word = next();
@@ -134,7 +42,7 @@ export function variants(...words: (Writable | string)[]): Writable {
 	};
 }
 
-function createVariantPicker<T>(variants: T[]): () => T {
+export function variantPicker<T>(variants: T[]): () => T {
 	let remaining = [...variants];
 	return () => {
 		let picked = pick(remaining);

@@ -1,21 +1,34 @@
 import { adjective, Adjective } from './adjective';
-import { generateArticle, parseGenderFromArticle } from './article';
+import {
+	generateArticle,
+	parseGenderFromArticle,
+	WithArticleArgs,
+	withArticleMixin,
+	WithArticleType,
+} from './article';
+import {
+	Declinable,
+	DeclinableArgs,
+	declinableMixin,
+	Gender,
+	GrammaticalCase,
+	GrammaticalNumber,
+} from './declinable';
+import { Writable } from './textHelper';
 import { capitalize } from './utils';
-import { Declinable, WithArticleType } from './word';
+import { variantPicker } from './variants';
 
-export type Gender = 'f' | 'n' | 'm';
-export type GrammaticalCase =
-	| 'nominative'
-	| 'accusative'
-	| 'dative'
-	| 'genitive';
-export type GrammaticalNumber = 'p' | 's';
-export type Article = 'indefinite' | 'definite' | 'none';
-
-export interface Noun extends Declinable, WithArticleType {
+export interface Noun
+	extends Declinable<Noun>,
+		WithArticleType<Noun>,
+		Writable {
 	specific: () => this;
 	unspecific: () => this;
 	attributes: (...adjectives: (Adjective | string)[]) => this;
+}
+
+export function isNoun(obj: any): obj is Noun {
+	return (obj as Noun).attributes !== undefined;
 }
 
 /**
@@ -44,119 +57,36 @@ export function noun(template: string): Noun {
 		nominativePl = nominativeSg + nominativePl.slice(1);
 	if (genitiveSg[0] === '-') genitiveSg = nominativeSg + genitiveSg.slice(1);
 
-	function create({
-		articleType,
-		attributes = [],
-		grammaticalCase,
-		grammaticalNumber,
-	}: {
-		grammaticalCase?: GrammaticalCase;
-		grammaticalNumber?: GrammaticalNumber;
-		articleType?: Article;
-		attributes?: Adjective[];
-	} = {}): Noun {
-		function decline(
-			grammaticalCase: GrammaticalCase,
-			grammaticalNumber: GrammaticalNumber
-		): string {
-			if (grammaticalNumber === 's') {
-				if (grammaticalCase === 'nominative') return nominativeSg;
-				if (grammaticalCase === 'genitive') return genitiveSg;
-				if (gender === 'f') return nominativeSg;
-				if (gender === 'n') {
-					if (grammaticalCase === 'accusative') return nominativeSg;
-					// needs extra care ❤️
-					if (nominativeSg.toLowerCase() === 'herz') return nominativePl;
-					return nominativeSg;
-				}
-				// maskuline: accusative + dative
-				if (isNDeclension(nominativeSg)) return nominativePl;
+	function decline(
+		grammaticalCase: GrammaticalCase,
+		grammaticalNumber: GrammaticalNumber
+	): string {
+		if (grammaticalNumber === 's') {
+			if (grammaticalCase === 'nominative') return nominativeSg;
+			if (grammaticalCase === 'genitive') return genitiveSg;
+			if (gender === 'f') return nominativeSg;
+			if (gender === 'n') {
+				if (grammaticalCase === 'accusative') return nominativeSg;
+				// needs extra care ❤️
+				if (nominativeSg.toLowerCase() === 'herz') return nominativePl;
 				return nominativeSg;
 			}
-			if (grammaticalNumber === 'p') {
-				if (
-					grammaticalCase === 'dative' &&
-					!['s', 'n'].includes(nominativePl[nominativePl.length - 1])
-				)
-					return nominativePl + 'n';
-				return nominativePl;
-			}
+			// maskuline: accusative + dative
+			if (isNDeclension(nominativeSg)) return nominativePl;
+			return nominativeSg;
 		}
+		if (grammaticalNumber === 'p') {
+			if (
+				grammaticalCase === 'dative' &&
+				!['s', 'n'].includes(nominativePl[nominativePl.length - 1])
+			)
+				return nominativePl + 'n';
+			return nominativePl;
+		}
+	}
 
-		return {
-			accusative() {
-				return create({
-					grammaticalCase: 'accusative',
-					grammaticalNumber,
-					articleType,
-					attributes,
-				});
-			},
-			dative() {
-				return create({
-					grammaticalCase: 'dative',
-					grammaticalNumber,
-					articleType,
-					attributes,
-				});
-			},
-			genitive() {
-				return create({
-					grammaticalCase: 'genitive',
-					grammaticalNumber,
-					articleType,
-					attributes,
-				});
-			},
-			nominative() {
-				return create({
-					grammaticalCase: 'nominative',
-					grammaticalNumber,
-					articleType,
-					attributes,
-				});
-			},
-			specific() {
-				return this.article('definite');
-			},
-			unspecific() {
-				return this.article('indefinite');
-			},
-			article(type) {
-				return create({
-					grammaticalCase,
-					grammaticalNumber,
-					articleType: type,
-					attributes,
-				});
-			},
-			attributes(...adjectivesOrStrings) {
-				const adjectives = adjectivesOrStrings.map((a) =>
-					typeof a === 'string' ? adjective(a) : a
-				);
-				return create({
-					grammaticalCase,
-					grammaticalNumber,
-					articleType,
-					attributes: adjectives,
-				});
-			},
-			plural() {
-				return create({
-					grammaticalCase,
-					grammaticalNumber: 'p',
-					articleType,
-					attributes,
-				});
-			},
-			singular() {
-				return create({
-					grammaticalCase,
-					grammaticalNumber: 's',
-					articleType,
-					attributes,
-				});
-			},
+	const create = nounFactory(
+		({ articleType, attributes, grammaticalCase, grammaticalNumber }) => ({
 			write() {
 				let words: string[] = [];
 				let k = grammaticalCase || 'nominative';
@@ -175,9 +105,57 @@ export function noun(template: string): Noun {
 				words.push(capitalize(decline(k, n)));
 				return words.join(' ');
 			},
-		};
-	}
+		})
+	);
+
 	return create();
+}
+
+export function nounSynonyms(...words: Noun[]): Noun {
+	const next = variantPicker(words);
+	const create = nounFactory(
+		({ attributes, articleType, grammaticalCase, grammaticalNumber }) => ({
+			write() {
+				let word = next();
+				if (grammaticalCase) word = word[grammaticalCase]();
+				if (grammaticalNumber)
+					word = grammaticalNumber === 's' ? word.singular() : word.plural();
+				if (articleType) word = word.article(articleType);
+				if (attributes.length > 0) word = word.attributes(...attributes);
+				return word.write();
+			},
+		})
+	);
+	return create();
+}
+
+type NounArgs = {
+	attributes: Adjective[];
+} & DeclinableArgs &
+	WithArticleArgs;
+
+export function nounFactory(
+	writable: (args: NounArgs) => Writable
+): (args?: NounArgs) => Noun {
+	return function create(args: NounArgs = { attributes: [] }): Noun {
+		return {
+			specific() {
+				return this.article('definite');
+			},
+			unspecific() {
+				return this.article('indefinite');
+			},
+			attributes(...adjectivesOrStrings) {
+				const adjectives = adjectivesOrStrings.map((a) =>
+					typeof a === 'string' ? adjective(a) : a
+				);
+				return create({ ...args, attributes: adjectives });
+			},
+			...withArticleMixin(create)(args),
+			...declinableMixin(create)(args),
+			...writable({ ...args }),
+		};
+	};
 }
 
 /**

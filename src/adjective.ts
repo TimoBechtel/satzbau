@@ -1,7 +1,27 @@
-import { Article, Gender, GrammaticalCase, GrammaticalNumber } from './noun';
-import { Declinable, WithArticleType } from './word';
+import {
+	Article,
+	WithArticleArgs,
+	withArticleMixin,
+	WithArticleType,
+} from './article';
+import {
+	Declinable,
+	DeclinableArgs,
+	declinableMixin,
+	Gender,
+	GrammaticalCase,
+	GrammaticalNumber,
+} from './declinable';
+import { Writable } from './textHelper';
+import { variantPicker } from './variants';
 
-export interface Adjective extends Declinable, WithArticleType {
+export function isAdjective(obj: any): obj is Adjective {
+	return (obj as Adjective).gender !== undefined;
+}
+export interface Adjective
+	extends Declinable<Adjective>,
+		WithArticleType<Adjective>,
+		Writable {
 	gender: (gender: Gender) => this;
 }
 
@@ -24,10 +44,10 @@ export function adjective(template: string): Adjective {
 		grammaticalCase = 'nominative',
 		grammaticalNumber = 's',
 	}: {
-		grammaticalCase: GrammaticalCase;
-		grammaticalNumber: GrammaticalNumber;
-		gender: Gender;
-		articleType: Article;
+		grammaticalCase?: GrammaticalCase;
+		grammaticalNumber?: GrammaticalNumber;
+		gender?: Gender;
+		articleType?: Article;
 	}) {
 		if (grammaticalNumber === 'p') {
 			if (articleType !== 'none' || grammaticalCase === 'dative')
@@ -64,91 +84,48 @@ export function adjective(template: string): Adjective {
 		return '';
 	}
 
-	function create({
-		grammaticalCase,
-		grammaticalNumber,
-		gender,
-		articleType,
-	}: {
-		grammaticalCase?: GrammaticalCase;
-		grammaticalNumber?: GrammaticalNumber;
-		gender?: Gender;
-		articleType?: Article;
-	} = {}): Adjective {
-		return {
-			accusative() {
-				return create({
-					articleType,
-					gender,
-					grammaticalCase: 'accusative',
-					grammaticalNumber,
-				});
-			},
-			dative() {
-				return create({
-					articleType,
-					gender,
-					grammaticalCase: 'dative',
-					grammaticalNumber,
-				});
-			},
-			genitive() {
-				return create({
-					articleType,
-					gender,
-					grammaticalCase: 'genitive',
-					grammaticalNumber,
-				});
-			},
-			nominative() {
-				return create({
-					articleType,
-					gender,
-					grammaticalCase: 'nominative',
-					grammaticalNumber,
-				});
-			},
-			singular() {
-				return create({
-					articleType,
-					gender,
-					grammaticalCase,
-					grammaticalNumber: 's',
-				});
-			},
-			plural() {
-				return create({
-					articleType,
-					gender,
-					grammaticalCase,
-					grammaticalNumber: 'p',
-				});
-			},
-			article(type) {
-				return create({
-					articleType: type,
-					gender,
-					grammaticalCase,
-					grammaticalNumber,
-				});
-			},
-			gender(gender) {
-				return create({
-					articleType,
-					gender: gender,
-					grammaticalCase,
-					grammaticalNumber,
-				});
-			},
-			write() {
-				return decline({
-					articleType,
-					gender,
-					grammaticalCase,
-					grammaticalNumber,
-				});
-			},
-		};
-	}
+	const create = adjectiveFactory((args) => ({
+		write() {
+			return decline(args);
+		},
+	}));
 	return create();
+}
+
+export function adjectiveSynonyms(...adjectives: Adjective[]): Adjective {
+	const next = variantPicker(adjectives);
+	const create = adjectiveFactory(
+		({ articleType, gender, grammaticalCase, grammaticalNumber }) => ({
+			write() {
+				let adj = next();
+				if (articleType) adj = adj.article(articleType);
+				if (gender) adj = adj.gender(gender);
+				if (grammaticalCase) adj = adj[grammaticalCase]();
+				if (grammaticalNumber)
+					adj = grammaticalNumber === 'p' ? adj.plural() : adj.singular();
+				return adj.write();
+			},
+		})
+	);
+	return create();
+}
+
+type AdjectiveArgs = {
+	gender?: Gender;
+} & DeclinableArgs &
+	WithArticleArgs;
+
+export function adjectiveFactory(
+	writable: (args: AdjectiveArgs) => Writable
+): (args?: AdjectiveArgs) => Adjective {
+	return function create(args: AdjectiveArgs = {}): Adjective {
+		return {
+			gender(g) {
+				return create({ ...args, gender: g });
+			},
+			...withArticleMixin(create)(args),
+			...declinableMixin(create)(args),
+			...writable({ ...args }),
+		};
+	};
 }
