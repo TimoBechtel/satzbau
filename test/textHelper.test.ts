@@ -54,7 +54,7 @@ test('created sentences automatically optimizes a few words', () => {
 
 test('creates a render function with props', () => {
 	const render = template`
-		Du hast folgende Items in deinem Inventar:
+		du hast folgende Items in deinem Inventar:
 		${({ items }: { items: SupportedTextTypes }) => sentence`${items}`}
 	`;
 

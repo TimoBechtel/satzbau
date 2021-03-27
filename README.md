@@ -56,11 +56,11 @@ yarn install satzbau
 
 ## Usage
 
-> Note: Every function is pure, meaning every function call will not change the object in-place, but instead return a new object.
+> Note: satzbau uses pure functions, meaning every function call will not change the object in-place, but instead return a new object.
 
 ### Define words
 
-```ts
+```js
 import { noun } from 'satzbau';
 
 // provide it with a string, containing:
@@ -76,13 +76,13 @@ console.log(phone.write()); // => "ein Telefon"
 
 ### Decline words
 
-```ts
+```js
 console.log(phone.plural().specific().genitive().write()); // => "der Telefone"
 ```
 
 ### Add adjectives
 
-```ts
+```js
 phone = phone.attributes('laut');
 
 console.log(phone.dative().write()); // => "einem lauten Telefon"
@@ -90,7 +90,7 @@ console.log(phone.dative().write()); // => "einem lauten Telefon"
 
 ### Create synonyms
 
-```ts
+```js
 import { synonyms } from 'satzbau';
 
 let mobilePhone = synonyms(
@@ -104,14 +104,14 @@ console.log(mobilePhone.plural().genitive().write()); // => e.g. "der kleinen Mo
 
 ### Count words
 
-```ts
+```js
 console.log(mobilePhone.count(3).write()); // drei kleine Mobiltelefone
 console.log(mobilePhone.negated().write()); // kein kleines Handy
 ```
 
 ### Construct a sentence
 
-```ts
+```js
 const items = [
 	noun('der schlüssel,-,-s'),
 	mobilePhone,
@@ -130,9 +130,38 @@ console.log(inMyBag.write()); // -> Ich habe einen Schlüssel, ein kleines Mobil
 console.log(inMyBag.write()); // -> Ich habe einen Schlüssel, ein kleines Handy und zwei Feuerzeuge im Rucksack.
 ```
 
-### More examples
+### Create template functions
+
+```js
+const describeCloud = template`
+	die Wolke sieht aus wie
+	${({ cloud, adjective }) => (adjective ? cloud.attributes(adjective) : cloud)}
+`;
+
+console.log(
+	describeCloud({ cloud: noun('der pinguin,-e,-s'), adjective: 'fliegend' })
+);
+// => "Die Wolke sieht aus wie ein fliegender Pinguin."
+
+console.log(
+	describeCloud({ cloud: noun('der affe,-en,-') }, { punctuation: '!' })
+);
+// => "Die Wolke sieht aus wie ein Affe!"
+```
+
+Note: For typescript, you should to provide types:
 
 ```ts
+const describeCloud = template`
+	die Wolke sieht aus wie
+	${({ cloud, adjective }: { cloud: Noun; adjective?: string }) =>
+		adjective ? cloud.attributes(adjective) : cloud}
+`;
+```
+
+### More examples
+
+```js
 import { adjective, noun, sentence, synonyms, variants } from 'satzbau';
 
 const color = synonyms(

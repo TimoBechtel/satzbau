@@ -29,16 +29,25 @@ type TextOptions = {
  * @param words Writable | Writable[] | string
  * @returns a writable sentence
  */
+type SentenceOptions = {
+	punctuation?: string;
+	capitalizeFirstLetter?: boolean;
+};
 export function sentence(
 	template: TemplateStringsArray,
 	...words: SupportedTextTypes[]
-): Writable<TextOptions & { punctuation?: string }> {
+): Writable<TextOptions & SentenceOptions> {
 	const writableText = text(template, ...words);
 	return {
-		write({ shortForms, punctuation = '.', trimWhiteSpace } = {}) {
+		write({
+			shortForms,
+			punctuation = '.',
+			trimWhiteSpace,
+			capitalizeFirstLetter = true,
+		} = {}) {
 			let text = writableText.write({ shortForms, trimWhiteSpace });
-			text = capitalize(text);
-			if (text[text.length - 1] !== punctuation) text += punctuation;
+			if (capitalizeFirstLetter) text = capitalize(text);
+			if (punctuation) text = text.replace(/[.,:;!?]?$/, punctuation);
 			return text;
 		},
 	};
@@ -122,13 +131,13 @@ export function template<Props = void>(
 		| ((arg: Props) => SupportedTextTypes)
 		| SupportedTextTypes
 	)[]
-): (props: Props) => string {
-	return (props) => {
+): (props: Props, options?: TextOptions & SentenceOptions) => string {
+	return (props, options = {}) => {
 		const nodes = parameterFunctions.map((p) => {
 			if (typeof p === 'function') return p(props);
 			return p;
 		});
-		return text(templateStrings, ...nodes).write();
+		return sentence(templateStrings, ...nodes).write(options);
 	};
 }
 
