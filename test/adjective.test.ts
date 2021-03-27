@@ -150,7 +150,7 @@ test('handles edge cases', () => {
 	expect(quiet.plural().write()).toBe('leisen');
 
 	/**
-	 * words ending with -er should not contain an 'e'
+	 * words ending with -er after diphthong (ei,au,eu) should not contain an 'e'
 	 */
 	const pricey = adjective('teuer');
 	expect(pricey.write()).toBe('teure');
@@ -158,6 +158,16 @@ test('handles edge cases', () => {
 	expect(pricey.genitive().write()).toBe('teuren');
 	expect(pricey.dative().write()).toBe('teuren');
 	expect(pricey.plural().write()).toBe('teuren');
+
+	/**
+	 * others ending in -er should not be modified
+	 */
+	const tasty = adjective('lecker');
+	expect(tasty.write()).toBe('leckere');
+	expect(tasty.accusative().write()).toBe('leckere');
+	expect(tasty.genitive().write()).toBe('leckeren');
+	expect(tasty.dative().write()).toBe('leckeren');
+	expect(tasty.plural().write()).toBe('leckeren');
 
 	/**
 	 * words ending with -el should switch 'e' with 'l'

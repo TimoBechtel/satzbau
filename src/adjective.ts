@@ -25,17 +25,27 @@ export interface Adjective
 	gender: (gender: Gender) => this;
 }
 
+/**
+ * creates a declinable adjective
+ * @param template adjective in base form
+ * @example adjective('klein');
+ */
 export function adjective(template: string): Adjective {
 	/**
-	 * removes e at the end
+	 * removes 'e' at the end
 	 * e.g. leise => leis
-	 * 	  teuer => teur
 	 */
-	let stem = template.replace(/e([rl]?)$/, '$1');
+	let stem = template.replace(/e(l?)$/, '$1');
+
+	/**
+	 * removes 'e' in '-er' after diphthong (eu,ei,au)
+	 * e.g. teuer => teur
+	 */
+	stem = stem.replace(/(eu|ei|au)er$/, '$1r');
 
 	/**
 	 * hoch => hoh
-	 * (any word that ends with 'hoch', so you do something like 'sehr hoch')
+	 * (any word that ends with 'hoch', so you can write something like 'sehr hoch')
 	 */
 	stem = stem.replace(/hoch$/, 'hoh');
 
