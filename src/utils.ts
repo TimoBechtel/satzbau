@@ -2,6 +2,9 @@ export function capitalize(word: string): string {
 	return word[0].toUpperCase() + word.slice(1);
 }
 
+/**
+ * trims whitespace and line breaks
+ */
 export function trim(text: string) {
 	return text
 		.replace(/[\n\r]/g, '')

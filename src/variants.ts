@@ -5,6 +5,7 @@ import { pick } from './utils';
 
 /**
  * Creates a declinable word with different synonyms.
+ *
  * It works just like a single word, only that
  * it chooses a different synonym every time it is rendered.
  * @example

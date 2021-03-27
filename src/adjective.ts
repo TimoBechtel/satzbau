@@ -21,6 +21,9 @@ export interface Adjective
 	extends Declinable<Adjective>,
 		WithArticleType<Adjective>,
 		Writable {
+	/**
+	 * returns a new adjective with the given gender
+	 */
 	gender: (gender: Gender) => this;
 }
 

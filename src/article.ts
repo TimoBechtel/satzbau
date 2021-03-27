@@ -15,6 +15,15 @@ export function parseGenderFromArticle(article: string): Gender {
 	}
 }
 
+/**
+ * creates a new article string based on the given gender, case, number and article type
+ * @param type article type: "indefinite" | "definite" | "none" | "negation"
+ * @param gender
+ * @param grammaticalCase
+ * @param grammaticalNumber
+ * @returns article string
+ * @example generateArticle('indefinite', 'f', 'genitive', 's'); // => "der"
+ */
 export function generateArticle(
 	type: Article,
 	gender: Gender,
@@ -111,6 +120,12 @@ function definiteArticle(
 }
 
 export interface WithArticleType<T> {
+	/**
+	 * returns the word with an article type set.
+	 *
+	 * This defines, what type of article will be written
+	 * and how adjectives are declined.
+	 */
 	article: (type: Article) => T;
 }
 

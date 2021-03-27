@@ -7,11 +7,29 @@ export type GrammaticalCase =
 export type GrammaticalNumber = 'p' | 's';
 
 export interface Declinable<T> {
+	/**
+	 * returns the word in plural
+	 */
 	plural: () => T;
+	/**
+	 * returns the word in singular
+	 */
 	singular: () => T;
+	/**
+	 * returns the word in accusative
+	 */
 	accusative: () => T;
+	/**
+	 * returns the word in genitive
+	 */
 	genitive: () => T;
+	/**
+	 * returns the word in dative
+	 */
 	dative: () => T;
+	/**
+	 * returns the word in nominative
+	 */
 	nominative: () => T;
 }
 

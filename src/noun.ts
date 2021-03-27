@@ -22,10 +22,35 @@ export interface Noun
 	extends Declinable<Noun>,
 		WithArticleType<Noun>,
 		Writable {
+	/**
+	 * returns a noun with a definite article.
+	 *
+	 * (e.g. nominative sg: "der" | "die" | "das")
+	 */
 	specific: () => this;
+	/**
+	 * returns a noun with an indefinite article.
+	 *
+	 * (e.g. nominative sg: "einer" | "eine" | "eines")
+	 */
 	unspecific: () => this;
+	/**
+	 * returns a noun with a negated article.
+	 *
+	 * (e.g. nominative sg: "keiner" | "keine" | "keines")
+	 */
 	negated: () => Noun;
+	/**
+	 * returns a noun with a given count
+	 * @example apple.count(4) => "vier Äpfel"
+	 */
 	count: (n: number) => Noun;
+	/**
+	 * returns a noun with the given adjectives.
+	 *
+	 * adjectives will automatically mirror the nouns declension
+	 * @param adjectives...  adjectives or strings
+	 */
 	attributes: (...adjectives: (Adjective | string)[]) => this;
 }
 

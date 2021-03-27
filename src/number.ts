@@ -1,3 +1,7 @@
+/**
+ * creates a textual representation of a number
+ * @example number(3) // => "drei"
+ */
 export function number(n: number): string {
 	const abs = Math.abs(n);
 	return (

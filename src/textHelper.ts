@@ -8,7 +8,7 @@ export type SupportedTextTypes = Writable | Writable[] | string | string[];
 
 type TextOptions = {
 	/**
-	 * automatically use short forms
+	 * automatically use short forms.
 	 * e.g. "im" instead of "in dem"
 	 */
 	shortForms?: boolean;
@@ -20,6 +20,7 @@ type TextOptions = {
 
 /**
  * Creates a writable sentence.
+ *
  * Sentences automatically start with a capital letter
  * and end with a dot.
  * @example const aboutTrains = sentence`ich mag ${train.plural()}`;

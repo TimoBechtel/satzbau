@@ -1,5 +1,5 @@
 <h1 align="center">🏗 <br/> Satzbau</h1>
-<h3 align="center">natural language generator for german</h3>
+<h3 align="center">natural language generation tool for german</h3>
 <p align="center"><i><code>/ˈzatsˌbaʊ/</code>, german: "sentence construction"</i></p>
 <p align="center">
   <a href="#" target="_blank">
@@ -17,13 +17,19 @@
 - [About](#About)
 - [Installation](#Install)
 - [Usage](#Usage)
-- [Test](#run-tests)
+  - [Define words](#Define-words)
+  - [Decline words](#Decline-words)
+  - [Create synonyms](#Create-synonyms)
+  - [Count words](#Count-words)
+  - [Construct a sentence](#Construct-a-sentence)
+  - [More examples](#More-examples)
+- [Development](#Development)
 - [Contact](#contact)
 - [Contributing](#Contributing)
 
 ## About
 
-A tool to generate natural german texts.
+A tool for generating natural sounding texts in german.
 
 It allows you to:
 
@@ -50,6 +56,8 @@ yarn install satzbau
 
 ## Usage
 
+> Note: Every function is pure, meaning every function call will not change the object in-place, but instead return a new object.
+
 ### Define words
 
 ```ts
@@ -58,28 +66,95 @@ import { noun } from 'satzbau';
 // provide it with a string, containing:
 // 1. an article
 // 2. the word in nominative singular, plural and genitive singular
-const phone = noun('das telefon, die telefone, des telefons');
+let phone = noun('das telefon, die telefone, des telefons');
 
 // or if you're lazy:
-const phone = noun('das telefon,-e,-s');
+phone = noun('das telefon,-e,-s');
+
+console.log(phone.write()); // => "ein Telefon"
 ```
 
-### Example
+### Decline words
 
 ```ts
-import { noun, sentence, synonyms } from 'satzbau';
+console.log(phone.plural().specific().genitive().write()); // => "der Telefone"
+```
 
-cconst car = synonyms(
+### Add adjectives
+
+```ts
+phone = phone.attributes('laut');
+
+console.log(phone.dative().write()); // => "einem lauten Telefon"
+```
+
+### Create synonyms
+
+```ts
+import { synonyms } from 'satzbau';
+
+let mobilePhone = synonyms(
+	noun('das mobiltelefon,-e,-s'),
+	noun('das handy,-s,-s'),
+	noun('das smartphone,-s,-s')
+).attributes('klein');
+
+console.log(mobilePhone.plural().genitive().write()); // => e.g. "der kleinen Mobiltelefone"
+```
+
+### Count words
+
+```ts
+console.log(mobilePhone.count(3).write()); // drei kleine Mobiltelefone
+console.log(mobilePhone.negated().write()); // kein kleines Handy
+```
+
+### Construct a sentence
+
+```ts
+const items = [
+	noun('der schlüssel,-,-s'),
+	mobilePhone,
+	noun('das feuerzeug,-e,-s').count(2),
+];
+const bag = synonyms(
+	noun('die tasche,-n,-'),
+	noun('der rucksack, rucksäcke, -s')
+);
+const inMyBag = sentence`
+	Ich habe ${items.map((i) => i.accusative())}
+	in ${bag.specific().dative()}
+`;
+
+console.log(inMyBag.write()); // -> Ich habe einen Schlüssel, ein kleines Mobiltelefon und zwei Feuerzeuge in der Tasche.
+console.log(inMyBag.write()); // -> Ich habe einen Schlüssel, ein kleines Handy und zwei Feuerzeuge im Rucksack.
+```
+
+### More examples
+
+```ts
+import { adjective, noun, sentence, synonyms, variants } from 'satzbau';
+
+const color = synonyms(
+	adjective('rot'),
+	adjective('blau'),
+	adjective('gelb'),
+	adjective('grün')
+);
+
+const car = synonyms(
 	noun('das auto, die autos, des autos'),
 	noun('der PKW, die PKWs, des PKWs'),
 	noun('der wagen, die wagen, des wagens'),
 	noun('die karre, die karren, der karre')
-).specific();
+)
+	.specific()
+	.attributes(color);
 
 const animals = [
-	noun('der elefant,-en,-en'),
-	noun('die maus,mäuse,-'),
-	noun('der kakadu,-s,-s'),
+	noun('der elefant,-en,-en').attributes('gutmütig'),
+	noun('die maus,mäuse,-').attributes('weiß'),
+	noun('der kakadu,-s,-s').attributes('lachend'),
 ];
 
 const door = noun('die tür,-en,-').specific();
@@ -103,16 +178,19 @@ console.log(sentence`${animals} erwarteten ihn bereits...`.write());
 
 /*
 	Output:
-	Eilig betrat er den Wagen.
-	Er stieg in die Karre.
-	Er öffnete die Tür des PKWs.
-	Er rannte zu dem Auto.
-	Er öffnete die Tür des Wagens.
-	Ein Elefant, eine Maus und ein Kakadu erwarteten ihn bereits...
+	
+	Er öffnete die Tür des grünen Autos.
+	Er eilte zum roten Wagen.
+	Er stieg in den gelben PKW.
+	Eilig betrat er die blaue Karre.
+	Er lief zum roten Auto.
+	Ein gutmütiger Elefant, eine weiße Maus und ein lachender Kakadu erwarteten ihn bereits...
 */
 ```
 
-## Run tests
+## Development
+
+### Run tests
 
 ```sh
 yarn run test
