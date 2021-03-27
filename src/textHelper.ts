@@ -73,8 +73,9 @@ export function writeList(
 	words: (Writable | string)[],
 	emptyMessage?: Writable | string
 ): string {
-	let lastThing: string = asString(words.pop());
-	let things: string[] = words.map(asString);
+	let _words = [...words];
+	let lastThing: string = asString(_words.pop());
+	let things: string[] = _words.map(asString);
 
 	if (!lastThing) return asString(emptyMessage);
 	if (things.length === 0) return lastThing;

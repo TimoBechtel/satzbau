@@ -16,6 +16,7 @@ test('generates a textual representation of a list', () => {
 		'Bertha',
 	];
 	expect(writeList(list)).toBe('a, b, ein Clown und Bertha');
+	expect(writeList(list)).toBe('a, b, ein Clown und Bertha'); // should not have side effects :sweat_smiley:
 
 	expect(writeList(['ein wort'])).toBe('ein wort');
 	expect(writeList(['eins', 'zwei'])).toBe('eins und zwei');
