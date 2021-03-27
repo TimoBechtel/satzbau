@@ -1,3 +1,22 @@
+# [1.1.0](https://github.com/TimoBechtel/satzbau/compare/v1.0.0...v1.1.0) (2021-03-27)
+
+
+### Bug Fixes
+
+* **adjectives:** generating wrong form ([2a2b464](https://github.com/TimoBechtel/satzbau/commit/2a2b4645b251548553e45951ee704484a577e6b5))
+* **adjectives:** issue with declining words ending in -er ([1a25b79](https://github.com/TimoBechtel/satzbau/commit/1a25b7922646ee39cdbd0bcb5c0ce306365b5fdd))
+* **texthelper:** issue where writeList would modify the provided list ([76138f4](https://github.com/TimoBechtel/satzbau/commit/76138f4c3c5785144478b09f7ca604918a2e2eee))
+
+
+### Features
+
+* **adjective:** add adjective synonyms ([61eabdc](https://github.com/TimoBechtel/satzbau/commit/61eabdc7810370beea33eb00bbe2e0dbcb6a2f74))
+* **adjective:** add declinable adjectives ([0c15abc](https://github.com/TimoBechtel/satzbau/commit/0c15abcf44d29c74c5d77dea554e65b3995ebb44))
+* **lists:** allow adding an empty list placeholder ([80d01d5](https://github.com/TimoBechtel/satzbau/commit/80d01d5a147e5bed8af98dce31911eedade4525f))
+* **noun:** allow creating adjective-noun combinations ([037bc46](https://github.com/TimoBechtel/satzbau/commit/037bc46e0def7d20089997d48d7eb386ac029112))
+* **texthelper:** add small sentence optimizations ([4f1f794](https://github.com/TimoBechtel/satzbau/commit/4f1f794ab149ecf9b6f231d6d6c879b3d80fba49))
+* add function to count words ([1ad0ac6](https://github.com/TimoBechtel/satzbau/commit/1ad0ac66967489c45adb780019660a137ed1ae34))
+
 # 1.0.0 (2021-03-23)
 
 ### Features
