@@ -42,6 +42,16 @@ test('creates a writable sentence that adds a dot and capitalizes the first lett
 	);
 });
 
+test('created sentences automatically optimizes a few words', () => {
+	const plane = noun('das flugzeug,-e,-s');
+	expect(sentence`ich sitze in ${plane.dative().specific()}`.write()).toBe(
+		'Ich sitze im Flugzeug.'
+	);
+	expect(sentence`ich laufe zu ${plane.dative().specific()}`.write()).toBe(
+		'Ich laufe zum Flugzeug.'
+	);
+});
+
 test('creates a render function with props', () => {
 	const render = template`
 		Du hast folgende Items in deinem Inventar:

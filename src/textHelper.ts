@@ -1,10 +1,22 @@
 import { capitalize, trim } from './utils';
 
-export type Writable = {
-	write: () => string;
+export type Writable<Options = {}> = {
+	write: (options?: Options) => string;
 };
 
 export type SupportedTextTypes = Writable | Writable[] | string | string[];
+
+type TextOptions = {
+	/**
+	 * automatically use short forms
+	 * e.g. "im" instead of "in dem"
+	 */
+	shortForms?: boolean;
+	/**
+	 * trims whitespace and line breaks
+	 */
+	trimWhiteSpace?: boolean;
+};
 
 /**
  * Creates a writable sentence.
@@ -19,13 +31,13 @@ export type SupportedTextTypes = Writable | Writable[] | string | string[];
 export function sentence(
 	template: TemplateStringsArray,
 	...words: SupportedTextTypes[]
-): Writable {
+): Writable<TextOptions & { punctuation?: string }> {
 	const writableText = text(template, ...words);
 	return {
-		write() {
-			let text = writableText.write();
+		write({ shortForms, punctuation = '.', trimWhiteSpace } = {}) {
+			let text = writableText.write({ shortForms, trimWhiteSpace });
 			text = capitalize(text);
-			if (text[text.length - 1] !== '.') text += '.';
+			if (text[text.length - 1] !== punctuation) text += punctuation;
 			return text;
 		},
 	};
@@ -42,9 +54,9 @@ export function sentence(
 export function text(
 	template: TemplateStringsArray,
 	...words: SupportedTextTypes[]
-): Writable {
+): Writable<TextOptions> {
 	return {
-		write() {
+		write({ shortForms = true, trimWhiteSpace = true } = {}) {
 			let text = '';
 			template.forEach((part, i) => {
 				text += part;
@@ -57,10 +69,23 @@ export function text(
 					}
 				}
 			});
-			text = trim(text);
+			if (shortForms) text = beautify(text);
+			if (trimWhiteSpace) text = trim(text);
 			return text;
 		},
 	};
+}
+
+/**
+ * do a few optimizations, like replacing "in dem" with "im"
+ */
+function beautify(text: string): string {
+	// replace "in dem" with "im", as this sound more natural
+	text = text.replace(/\bin dem\b/, 'im');
+	text = text.replace(/\bin das\b/, 'ins');
+	text = text.replace(/\zu dem\b/, 'zum');
+	text = text.replace(/\zu der\b/, 'zur');
+	return text;
 }
 
 /**
