@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/TimoBechtel/satzbau/compare/v1.1.0...v1.2.0) (2021-03-27)
+
+
+### Features
+
+* **template:** template now has sentence functionalites ([bfc043c](https://github.com/TimoBechtel/satzbau/commit/bfc043cfb67dac44b9a80fcc1270db74e00d22c0))
+
 # [1.1.0](https://github.com/TimoBechtel/satzbau/compare/v1.0.0...v1.1.0) (2021-03-27)
 
 
