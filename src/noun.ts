@@ -109,39 +109,55 @@ export function noun(template: string): Noun {
 		}) => ({
 			write() {
 				let words: string[] = [];
-				let c = grammaticalNumber === 's' ? undefined : count;
-				let k = grammaticalCase || 'nominative';
-				let n = grammaticalNumber || 's';
-				let t = articleType;
-				// generate defaults, if articleType is not explicitly set
-				if (!t) {
-					if (c) {
-						t = 'none';
+
+				// generate defaults if parameters are not explicitly set
+				count = grammaticalNumber === 's' ? undefined : count;
+				grammaticalCase = grammaticalCase || 'nominative';
+				grammaticalNumber = grammaticalNumber || 's';
+				if (!articleType) {
+					if (count) {
+						articleType = 'none';
 					} else {
-						t = n === 's' ? 'indefinite' : 'definite';
+						articleType = grammaticalNumber === 's' ? 'indefinite' : 'definite';
 					}
 				}
-				const article = generateArticle(t, gender, k, n);
+
+				const article = generateArticle(
+					articleType,
+					gender,
+					grammaticalCase,
+					grammaticalNumber
+				);
 				if (article) words.push(article);
-				if (c && c !== 1) {
-					words.push(number(c));
+				if (count && count !== 1) {
+					words.push(number(count));
 				}
 				const attributesString = attributes
 					.map((a) => {
-						let attribute: Adjective = a[k]().article(t).gender(gender);
-						attribute = n === 'p' ? attribute.plural() : attribute.singular();
+						let attribute: Adjective = a[grammaticalCase]()
+							.article(articleType)
+							.gender(gender);
+						attribute =
+							grammaticalNumber === 'p'
+								? attribute.plural()
+								: attribute.singular();
 						return attribute.write();
 					})
 					.join(', ');
 				if (attributesString.length > 0) words.push(attributesString);
+
 				if (definingAdjective) {
-					let adjective: Adjective = definingAdjective[k]()
-						.article(t)
+					let adjective: Adjective = definingAdjective[grammaticalCase]()
+						.article(articleType)
 						.gender(gender);
-					adjective = n === 'p' ? adjective.plural() : adjective.singular();
+					adjective =
+						grammaticalNumber === 'p'
+							? adjective.plural()
+							: adjective.singular();
 					words.push(adjective.write());
 				}
-				words.push(capitalize(decline(k, n)));
+
+				words.push(capitalize(decline(grammaticalCase, grammaticalNumber)));
 				return words.join(' ');
 			},
 		})
