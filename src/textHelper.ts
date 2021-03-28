@@ -125,7 +125,7 @@ export function writeList(
  * @param parameterFunctions functions that returns a string or Writable
  * @returns render function that takes properties to render a string
  */
-export function template<Props = void>(
+export function template<Props = any>(
 	templateStrings: TemplateStringsArray,
 	...parameterFunctions: (
 		| ((arg: Props) => SupportedTextTypes)
