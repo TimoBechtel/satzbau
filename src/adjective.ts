@@ -12,7 +12,7 @@ import {
 	GrammaticalCase,
 	GrammaticalNumber,
 } from './declinable';
-import { Writable } from './textHelper';
+import { Writable } from './text';
 
 export function isAdjective(obj: any): obj is Adjective {
 	return (obj as Adjective).gender !== undefined;

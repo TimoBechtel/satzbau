@@ -1,6 +1,6 @@
 import { adjective } from '../src/adjective';
 import { noun } from '../src/noun';
-import { sentence } from '../src/textHelper';
+import { sentence } from '../src/sentence';
 
 test('generates declinable word by providing it with a template string', () => {
 	const a = noun('der see, die seen, des sees');

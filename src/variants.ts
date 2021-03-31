@@ -1,6 +1,6 @@
 import { Adjective, adjectiveFactory, isAdjective } from './adjective';
 import { isNoun, Noun, nounFactory } from './noun';
-import { asString, Writable } from './textHelper';
+import { asString, Writable } from './text';
 import { pick } from './utils';
 
 /**
@@ -75,10 +75,13 @@ export function nounSynonyms(...words: Noun[]): Noun {
  * @param words
  * @returns writable text node
  */
-export function variants(...words: (Writable | string)[]): Writable {
+
+export function variants<Props = void>(
+	...words: (Writable<Props> | Writable | string)[]
+): Writable<Props> | Writable {
 	const next = variantPicker(words);
 	return {
-		write: () => asString(next()),
+		write: (props?: Props) => asString(next(), props),
 	};
 }
 

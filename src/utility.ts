@@ -1,5 +1,5 @@
 import { Noun } from './noun';
-import { Writable } from './textHelper';
+import { Writable } from './text';
 
 export function within(word: Noun): Writable {
 	return {

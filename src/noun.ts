@@ -15,7 +15,7 @@ import {
 	GrammaticalNumber,
 } from './declinable';
 import { number } from './number';
-import { Writable } from './textHelper';
+import { Writable } from './text';
 import { capitalize } from './utils';
 
 export interface Noun

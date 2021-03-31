@@ -1,11 +1,6 @@
-import { noun } from '../src/noun';
-import {
-	sentence,
-	SupportedTextTypes,
-	template,
-	text,
-	writeList,
-} from '../src/textHelper';
+import { Noun, noun } from '../src/noun';
+import { sentence } from '../src/sentence';
+import { text, Writable, writeList } from '../src/text';
 import { variants } from '../src/variants';
 
 test('generates a textual representation of a list', () => {
@@ -53,9 +48,9 @@ test('created sentences automatically optimizes a few words', () => {
 });
 
 test('creates a render function with props', () => {
-	const render = template`
+	const youHave = sentence`
 		du hast folgende Items in deinem Inventar:
-		${({ items }: { items: SupportedTextTypes }) => sentence`${items}`}
+		${({ items }: { items: Writable[] }) => sentence`${items}`}
 	`;
 
 	const items = [
@@ -64,11 +59,28 @@ test('creates a render function with props', () => {
 		noun('die axt, die äxte, der axt'),
 	];
 
-	expect(render({ items })).toBe(
+	expect(youHave.write({ items })).toBe(
 		'Du hast folgende Items in deinem Inventar: Ein Stock, ein Stein und eine Axt.'
 	);
 
-	expect(render({ items: [text`nichts`] })).toBe(
+	expect(youHave.write({ items: [text`nichts`] })).toBe(
 		'Du hast folgende Items in deinem Inventar: Nichts.'
+	);
+});
+
+test('allows creating nested template functions', () => {
+	const listItems = sentence`${(items: Noun[]) => items}`;
+	const youSeePills = text`
+		${sentence`du siehst`.punctuation(':')}
+		${listItems}
+	`;
+	const pill = noun('die pille,-n,-').accusative();
+	const items = [
+		pill.attributes('rot'),
+		pill.attributes('blau'),
+		pill.attributes('grün'),
+	];
+	expect(youSeePills.write(items)).toBe(
+		'Du siehst: Eine rote Pille, eine blaue Pille und eine grüne Pille.'
 	);
 });
