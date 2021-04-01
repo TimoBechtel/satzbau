@@ -35,8 +35,8 @@
 	],
 	"scripts": {
 		"prepack": "npm run build",
-		"build": "microbundle",
-		"dev": "microbundle watch",
+		"build": "microbundle --no-sourcemap",
+		"dev": "microbundle watch --no-sourcemap",
 		"test": "jest"
 	}
 }
