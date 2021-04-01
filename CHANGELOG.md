@@ -1,3 +1,18 @@
+# [2.0.0](https://github.com/TimoBechtel/satzbau/compare/v1.2.0...v2.0.0) (2021-04-01)
+
+
+### Features
+
+* **text:** replace writeList with writable list ([a56ed0d](https://github.com/TimoBechtel/satzbau/commit/a56ed0da25260d8c8c61a358f9002bd28f8b9c3a))
+* merge sentence with template ([7ad5549](https://github.com/TimoBechtel/satzbau/commit/7ad5549225adec95fc7bdf74caba96928988e935))
+* **utility:** add small utility functions ([f1a1971](https://github.com/TimoBechtel/satzbau/commit/f1a1971c717bd53a44e017a49182cee9c45a2b2f))
+
+
+### BREAKING CHANGES
+
+* **text:** writeList has been removed
+* template function has been removed
+
 # [1.2.0](https://github.com/TimoBechtel/satzbau/compare/v1.1.0...v1.2.0) (2021-03-27)
 
 
