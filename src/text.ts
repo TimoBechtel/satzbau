@@ -6,7 +6,7 @@ export type Writable<Props = void> = {
 
 export type SupportedTextTypes<Props = void> =
 	| Writable<Props>
-	| Writable[]
+	| Writable<Props>[]
 	| string
 	| string[];
 
@@ -82,7 +82,7 @@ export function text<Props = void>(
 								word = word(props);
 							}
 							if (Array.isArray(word)) {
-								text += writeList(word);
+								text += list(word).write(props);
 							} else {
 								text += asString(word, props);
 							}
@@ -147,24 +147,50 @@ function beautify(text: string): string {
 	return text;
 }
 
+interface List<Props = void> extends Writable<Props> {
+	/**
+	 * returns a list that will be concatenated with `oder`
+	 */
+	any(): this;
+	/**
+	 * returns a list that will be concatenated with `und` (default)
+	 */
+	every(): this;
+}
+
 /**
- * generates a textual representation of a list
- * @example writeList([apple, pear, orange]); // => ein Apfel, eine Birne und eine Orange
+ * generates a writable representation of a list
+ * @example list([apple, pear, orange]).any().write(); // => ein Apfel, eine Birne oder eine Orange
  * @param words list of words
- * @returns written list
+ * @returns writable list
  */
-export function writeList(
-	words: (Writable | string)[],
+export function list<Props = void>(
+	words: (Writable<Props> | Writable | string)[],
 	emptyMessage?: Writable | string
-): string {
-	let _words = [...words];
-	let lastThing: string = asString(_words.pop());
-	let things: string[] = _words.map((w) => asString(w));
+): List<Props> | List {
+	function create({ any }: { any: boolean } = { any: false }) {
+		return {
+			any() {
+				return create({ any: true });
+			},
+			every() {
+				return create({ any: false });
+			},
+			write(props?: Props) {
+				let _words = [...words];
+				let lastThing: string = asString(_words.pop(), props);
+				let things: string[] = _words.map((w) => asString(w, props));
 
-	if (!lastThing) return asString(emptyMessage);
-	if (things.length === 0) return lastThing;
+				if (!lastThing) return asString(emptyMessage);
+				if (things.length === 0) return lastThing;
 
-	return [things.join(', '), lastThing].join(' und ');
+				const connector = any ? 'oder' : 'und';
+
+				return [things.join(', '), lastThing].join(` ${connector} `);
+			},
+		};
+	}
+	return create();
 }
 
 export function asString<Props>(

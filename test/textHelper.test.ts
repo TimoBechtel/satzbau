@@ -1,22 +1,35 @@
 import { Noun, noun } from '../src/noun';
 import { sentence } from '../src/sentence';
-import { text, Writable, writeList } from '../src/text';
+import { list, text, Writable } from '../src/text';
 import { variants } from '../src/variants';
 
 test('generates a textual representation of a list', () => {
-	const list = [
+	const items = [
 		'a',
 		variants('b'),
 		noun('der clown, die clowns, des clowns'),
 		'Bertha',
 	];
-	expect(writeList(list)).toBe('a, b, ein Clown und Bertha');
-	expect(writeList(list)).toBe('a, b, ein Clown und Bertha'); // should not have side effects :sweat_smiley:
+	expect(list(items).write()).toBe('a, b, ein Clown und Bertha');
+	expect(list(items).write()).toBe('a, b, ein Clown und Bertha'); // should not have side effects :sweat_smiley:
 
-	expect(writeList(['ein wort'])).toBe('ein wort');
-	expect(writeList(['eins', 'zwei'])).toBe('eins und zwei');
+	expect(list(['ein wort']).write()).toBe('ein wort');
+	expect(list(['eins', 'zwei']).write()).toBe('eins und zwei');
+	expect(list(['eins', 'zwei', 'drei']).any().write()).toBe(
+		'eins, zwei oder drei'
+	);
 
-	expect(writeList([])).toBe('');
+	expect(list([]).write()).toBe('');
+});
+
+test('list also accepts texts with properties', () => {
+	const iAmA = text`bin ich ${(item: Noun) => item}`;
+
+	const whatAmI = list([iAmA, iAmA]).any();
+
+	expect(sentence`${whatAmI}`.ask().write(noun('die melone,-n,-'))).toBe(
+		'Bin ich eine Melone oder bin ich eine Melone?'
+	);
 });
 
 test('creates a writable sentence that adds a dot and capitalizes the first letter', () => {
