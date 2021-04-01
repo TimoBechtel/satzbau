@@ -19,9 +19,11 @@
 - [Usage](#Usage)
   - [Define words](#Define-words)
   - [Decline words](#Decline-words)
+  - [Add adjectives](#Add-adjectives)
   - [Create synonyms](#Create-synonyms)
   - [Count words](#Count-words)
   - [Construct a sentence](#Construct-a-sentence)
+  - [Pass properties to sentences](#Pass-properties-to-sentences)
   - [More examples](#More-examples)
 - [Development](#Development)
 - [Contact](#contact)
@@ -29,21 +31,21 @@
 
 ## About
 
-A tool for generating natural sounding texts in german.
+satzbau allows you to generate natural sounding texts in German.
 
 It allows you to:
 
 - decline words (including articles and adjectives)
 - define evenly distributed synonyms for words
 - automatically render lists as text
-- a handy template string syntax to format sentences
-- create template functions to render advances sentences
+- use a handy tagged template string syntax to format sentences (it's like magic 🪄)
+- create dynamic sentences with properties
 
 **It's pretty small and does not need a dictionary.**
 
 However, it can't (yet):
 
-- automatically detect cases
+- automatically detect the correct cases
 - conjugate verbs
 
 ## Install
@@ -56,7 +58,9 @@ yarn install satzbau
 
 ## Usage
 
-> Note: satzbau uses pure functions, meaning every function call will not change the object in-place, but instead return a new object.
+> Note: satzbau provides pure functions, meaning every function call will not change the object in-place, but instead return a new object.
+
+satzbau is written in typescript, so I recommend to use typescript or an IDE that supports autocomplete for in-code documentation.
 
 ### Define words
 
@@ -65,7 +69,7 @@ import { noun } from 'satzbau';
 
 // provide it with a string, containing:
 // 1. an article
-// 2. the word in nominative singular, plural and genitive singular
+// 2. the word in nominative singular, sg. plural and genitive singular
 let phone = noun('das telefon, die telefone, des telefons');
 
 // or if you're lazy:
@@ -127,58 +131,70 @@ const inMyBag = sentence`
 `;
 
 console.log(inMyBag.write()); // -> Ich habe einen Schlüssel, ein kleines Mobiltelefon und zwei Feuerzeuge in der Tasche.
-console.log(inMyBag.write()); // -> Ich habe einen Schlüssel, ein kleines Handy und zwei Feuerzeuge im Rucksack.
+console.log(inMyBag.shout().write()); // -> Ich habe einen Schlüssel, ein kleines Handy und zwei Feuerzeuge im Rucksack!
 ```
 
-### Create template functions
+### Pass properties to sentences
 
 ```js
-const describeCloud = template`
+const describeCloud = sentence`
 	die Wolke sieht aus wie
 	${({ cloud, adjective }) => (adjective ? cloud.attributes(adjective) : cloud)}
 `;
 
 console.log(
-	describeCloud({ cloud: noun('der pinguin,-e,-s'), adjective: 'fliegend' })
+	describeCloud.write({
+		cloud: noun('der pinguin,-e,-s'),
+		adjective: 'fliegend',
+	})
 );
 // => "Die Wolke sieht aus wie ein fliegender Pinguin."
 
-console.log(
-	describeCloud({ cloud: noun('der affe,-en,-') }, { punctuation: '!' })
-);
+console.log(describeCloud.shout().write({ cloud: noun('der affe,-en,-') }));
 // => "Die Wolke sieht aus wie ein Affe!"
 ```
 
-Note: For typescript, you should to provide types:
+Note: For typescript, you need to provide types:
 
 ```ts
-const describeCloud = template`
+const describeCloud = sentence`
 	die Wolke sieht aus wie
 	${({ cloud, adjective }: { cloud: Noun; adjective?: string }) =>
 		adjective ? cloud.attributes(adjective) : cloud}
+`;
+// or
+const describeCloud = sentence<{ cloud: Noun; adjective?: string }>`
+	die Wolke sieht aus wie
+	${({ cloud, adjective }) => (adjective ? cloud.attributes(adjective) : cloud)}
 `;
 ```
 
 ### More examples
 
 ```js
-import { adjective, noun, sentence, synonyms, variants } from 'satzbau';
+import {
+	adjective,
+	into,
+	list,
+	noun,
+	sentence,
+	synonyms,
+	text,
+	to,
+	variants,
+} from 'satzbau';
 
-const color = synonyms(
-	adjective('rot'),
-	adjective('blau'),
-	adjective('gelb'),
-	adjective('grün')
-);
+const color = synonyms(adjective('rot'), adjective('blau'), adjective('gelb'));
 
 const car = synonyms(
 	noun('das auto, die autos, des autos'),
 	noun('der PKW, die PKWs, des PKWs'),
-	noun('der wagen, die wagen, des wagens'),
 	noun('die karre, die karren, der karre')
 )
 	.specific()
 	.attributes(color);
+
+const train = synonyms(noun('der zug,züge,-s'), noun('die bahn,-en,-'));
 
 const animals = [
 	noun('der elefant,-en,-en').attributes('gutmütig'),
@@ -190,31 +206,51 @@ const door = noun('die tür,-en,-').specific();
 
 const move = variants('eilte', 'rannte', 'lief');
 
-const heEntersCar = variants(
-	sentence`er stieg in ${car.accusative()}`,
-	sentence`eilig betrat er ${car.accusative()}`,
-	sentence`er öffnete ${door.accusative()} ${car.genitive()}`,
-	sentence`er ${move} zu ${car.dative()}`
+const heEnters = variants(
+	sentence`er stieg ${(object) => into(object)}`,
+	sentence`eilig betrat er ${(object) => object.accusative()}`,
+	sentence`er öffnete ${door.accusative()} ${(object) => object.genitive()}`,
+	sentence`er ${move} ${(object) => to(object)}`
 );
 
-console.log(heEntersCar.write());
-console.log(heEntersCar.write());
-console.log(heEntersCar.write());
-console.log(heEntersCar.write());
-console.log(heEntersCar.write());
+console.log(heEnters.write(car));
+console.log(heEnters.write(car));
+console.log(heEnters.write(car));
+console.log(heEnters.write(train));
 
-console.log(sentence`${animals} erwarteten ihn bereits...`.write());
+console.log(sentence`${animals} erwarteten ihn bereits`.write());
+console.log(
+	text`
+		${sentence`
+			${list(animals).any()}
+		`.ask()}
+		${sentence`er wusste es nicht mehr so genau...`}
+	`.write()
+);
 
 /*
 	Output:
 	
-	Er öffnete die Tür des grünen Autos.
+	Er öffnete die Tür des blauen Autos.
 	Er eilte zum roten Wagen.
 	Er stieg in den gelben PKW.
-	Eilig betrat er die blaue Karre.
-	Er lief zum roten Auto.
-	Ein gutmütiger Elefant, eine weiße Maus und ein lachender Kakadu erwarteten ihn bereits...
+	Er rannte zu einer Bahn.
+	Ein gutmütiger Elefant, eine weiße Maus und ein lachender Kakadu erwarteten ihn bereits.
+	Ein gutmütiger Elefant, eine weiße Maus oder ein lachender Kakadu? Er wusste es nicht mehr so genau...
 */
+```
+
+Again, provide types when using typescript:
+
+```ts
+const heEnters = variants<Noun>(
+	sentence`er stieg ${(object) => into(object)}`,
+	sentence`eilig betrat er ${(object) => object.accusative()}`,
+	sentence`er öffnete ${door.accusative()} ${(object) => object.genitive()}`,
+	sentence<Noun>`er ${move} ${(object) => to(object)}`
+	// notice, how we need to provide the type explicitly in the last sentence
+	// this is because "move" has no properties and typescript defaults to "void"
+);
 ```
 
 ## Development
