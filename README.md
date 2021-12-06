@@ -50,21 +50,11 @@ However, it can't (yet):
 
 ## Install
 
-<!-- tabs:start -->
-
-### **npm**
+### npm
 
 ```sh
 npm install satzbau
 ```
-
-### **yarn**
-
-```sh
-yarn add satzbau
-```
-
-<!-- tabs:end -->
 
 ## Usage
 
