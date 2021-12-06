@@ -50,11 +50,21 @@ However, it can't (yet):
 
 ## Install
 
-### NPM:
+<!-- tabs:start -->
+
+### npm
 
 ```sh
-yarn install satzbau
+npm install satzbau
 ```
+
+### yarn
+
+```sh
+yarn add satzbau
+```
+
+<!-- tabs:end -->
 
 ## Usage
 
@@ -265,7 +275,7 @@ yarn run test
 
 👤 **Timo Bechtel**
 
-- Website: https://timobechtel.com
+- Website: <https://timobechtel.com>
 - Twitter: [@TimoBechtel](https://twitter.com/TimoBechtel)
 - GitHub: [@TimoBechtel](https://github.com/TimoBechtel)
 
