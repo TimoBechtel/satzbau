@@ -52,13 +52,13 @@ However, it can't (yet):
 
 <!-- tabs:start -->
 
-### npm
+### **npm**
 
 ```sh
 npm install satzbau
 ```
 
-### yarn
+### **yarn**
 
 ```sh
 yarn add satzbau
