@@ -1,3 +1,10 @@
+# [2.1.0](https://github.com/TimoBechtel/satzbau/compare/v2.0.0...v2.1.0) (2022-01-24)
+
+
+### Features
+
+* **typescript:** add noun template type checking ([4d99a1e](https://github.com/TimoBechtel/satzbau/commit/4d99a1e55b4cce0087aa3dc2ee6250a50b648d2b))
+
 # [2.0.0](https://github.com/TimoBechtel/satzbau/compare/v1.2.0...v2.0.0) (2021-04-01)
 
 
