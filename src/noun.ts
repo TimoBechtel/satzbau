@@ -58,6 +58,11 @@ export function isNoun(obj: any): obj is Noun {
 	return (obj as Noun).attributes !== undefined;
 }
 
+export type NounTemplate = `${
+	| 'die'
+	| 'der'
+	| 'das'} ${string},${string},${string}`;
+
 /**
  * Creates a declinable noun.
  * For this to work, you need to provide this function with
@@ -67,7 +72,7 @@ export function isNoun(obj: any): obj is Noun {
  * @param template template; syntax: 'ARTICLE WORD_SINGULAR, [ART.] W.PLURAL, [ART.] W.GENITIVE_PLURAL'
  * @example noun('das auto, die autos, des autos');
  */
-export function noun(template: string): Noun {
+export function noun(template: NounTemplate): Noun {
 	const declensions = template.split(',');
 	if (declensions.length < 3) throw 'Wrong template syntax';
 

@@ -155,7 +155,7 @@ test('generates correct form', () => {
 			dat_sg: 'dem Herzen',
 			dat_pl: 'den Herzen',
 		},
-	];
+	] as const;
 	testWords.forEach(
 		({ acc_pl, acc_sg, dat_pl, dat_sg, gen_pl, gen_sg, nom_pl, nom_sg }) => {
 			let word = noun(`${nom_sg}, ${nom_pl}, ${gen_sg}`).specific();
@@ -175,10 +175,17 @@ test('generates correct form', () => {
 });
 
 test('throws error on wrong template syntax', () => {
+	// @ts-expect-error
 	expect(() => noun('auto')).toThrow();
+	// @ts-expect-error
 	expect(() => noun('')).toThrow();
+	// @ts-expect-error
 	expect(() => noun('das auto')).toThrow();
+	// @ts-expect-error
+	expect(() => noun('dasauto,-s,-s')).toThrow();
+	// @ts-expect-error
 	expect(() => noun('das auto, die autos')).toThrow();
+	// @ts-expect-error
 	expect(() => noun('auto,autos,autos')).toThrow();
 });
 
