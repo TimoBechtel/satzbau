@@ -63,7 +63,7 @@ export function adjective(template: string): Adjective {
 		articleType?: Article;
 	}) {
 		if (grammaticalNumber === 'p') {
-			if (articleType !== 'none' || grammaticalCase === 'dative')
+			if ((articleType !== 'none' && articleType !== 'indefinite') || grammaticalCase === 'dative')
 				return stem + 'en';
 			if (grammaticalCase === 'nominative' || grammaticalCase === 'accusative')
 				return stem + 'e';
