@@ -198,6 +198,8 @@ test('allows adding adjectives to nouns', () => {
 		.attributes(adjective('klein'))
 		.specific();
 	expect(stone.write()).toBe('der kleine Stein');
+	expect(stone.plural().write()).toBe('die kleinen Steine');
+	expect(stone.plural().unspecific().write()).toBe('kleine Steine');
 
 	const door = noun('die tür,-en,-').attributes('viel zu klein');
 
