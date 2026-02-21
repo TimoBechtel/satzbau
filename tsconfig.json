@@ -1,0 +1,15 @@
+{
+	"compilerOptions": {
+		"target": "ES2020",
+		"module": "ESNext",
+		"moduleResolution": "Node",
+		"strict": false,
+		"noImplicitAny": false,
+		"strictNullChecks": false,
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"forceConsistentCasingInFileNames": true,
+		"types": ["jest", "node"]
+	},
+	"include": ["src", "test"]
+}
