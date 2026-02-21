@@ -79,9 +79,9 @@ test('adjectives decline properly', () => {
 				dative: 'netten',
 			},
 			indefinite: {
-				nominative: 'netten',
-				accusative: 'netten',
-				genitive: 'netten',
+				nominative: 'nette',
+				accusative: 'nette',
+				genitive: 'netter',
 				dative: 'netten',
 			},
 			none: {
