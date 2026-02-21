@@ -1,3 +1,10 @@
+## [2.1.1](https://github.com/TimoBechtel/satzbau/compare/v2.1.0...v2.1.1) (2026-02-21)
+
+
+### Bug Fixes
+
+* article attached to unspecific plural nouns. ([#1](https://github.com/TimoBechtel/satzbau/issues/1)) ([a21c60b](https://github.com/TimoBechtel/satzbau/commit/a21c60bfa67021025104c0aea50862e1a3184b52))
+
 # [2.1.0](https://github.com/TimoBechtel/satzbau/compare/v2.0.0...v2.1.0) (2022-01-24)
 
 
